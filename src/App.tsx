@@ -21,7 +21,7 @@ export function App() {
     nextStep,
     setPlaying,
     loadProblems,
-    setCommandPaletteOpen
+    setCommandPaletteOpen,
   } = useAppStore();
 
   useEffect(() => {
@@ -59,9 +59,12 @@ export function App() {
       <div className="mx-auto max-w-[1800px] space-y-4">
         <header className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/70 px-4 py-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Striver Code Visualizer</p>
+            <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
+              Striver Code Visualizer
+            </p>
             <p className="text-sm text-slate-300">
-              Premium local DSA workspace {selectedProblem ? `• ${selectedProblem.title}` : ""}
+              Premium local DSA workspace{" "}
+              {selectedProblem ? `• ${selectedProblem.title}` : ""}
             </p>
           </div>
           <button

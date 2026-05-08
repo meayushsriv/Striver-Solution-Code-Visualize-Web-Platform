@@ -6,7 +6,8 @@ import { useAppStore } from "../store/appStore";
 import { explainWithAi } from "../services/ai";
 
 export function CenterPanel() {
-  const { selectedProblem, notes, setNote, favorites, toggleFavorite } = useAppStore();
+  const { selectedProblem, notes, setNote, favorites, toggleFavorite } =
+    useAppStore();
   const [aiExplanation, setAiExplanation] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +18,8 @@ export function CenterPanel() {
       const explanation = await explainWithAi({
         code: selectedProblem.code,
         language: selectedProblem.language,
-        question: "Provide a detailed explanation of this algorithm and its approach."
+        question:
+          "Provide a detailed explanation of this algorithm and its approach.",
       });
       setAiExplanation(explanation);
     } catch (error) {
@@ -40,7 +42,9 @@ export function CenterPanel() {
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold">{selectedProblem.title}</h2>
-          <p className="text-xs text-slate-400">{selectedProblem.relativePath}</p>
+          <p className="text-xs text-slate-400">
+            {selectedProblem.relativePath}
+          </p>
         </div>
         <button
           onClick={() => toggleFavorite(selectedProblem.id)}
@@ -68,7 +72,9 @@ export function CenterPanel() {
             <ScrollArea.Root className="h-full">
               <ScrollArea.Viewport className="h-full">
                 <div className="space-y-4 p-1">
-                  <Card title="Problem Statement">{selectedProblem.statement}</Card>
+                  <Card title="Problem Statement">
+                    {selectedProblem.statement}
+                  </Card>
                   <Card title="Approach">{selectedProblem.approach}</Card>
                   <Card title="Complexity">{`${selectedProblem.complexity.time} time • ${selectedProblem.complexity.space} space`}</Card>
                   <Card title="AI Explanation">
@@ -79,7 +85,10 @@ export function CenterPanel() {
                     >
                       {loading ? "Loading..." : "Get AI Explanation"}
                     </button>
-                    <p className="text-sm">{aiExplanation || "Click to get AI-powered explanation of the approach."}</p>
+                    <p className="text-sm">
+                      {aiExplanation ||
+                        "Click to get AI-powered explanation of the approach."}
+                    </p>
                   </Card>
                 </div>
               </ScrollArea.Viewport>
@@ -91,7 +100,10 @@ export function CenterPanel() {
         <Tabs.Content value="visualization" asChild>
           <ScrollArea.Root className="h-full">
             <ScrollArea.Viewport className="h-full p-4">
-              <Card title="Visualization Flow">Use the right panel controls to animate state and inspect variable transitions.</Card>
+              <Card title="Visualization Flow">
+                Use the right panel controls to animate state and inspect
+                variable transitions.
+              </Card>
             </ScrollArea.Viewport>
             <ScrollArea.Scrollbar orientation="vertical" />
           </ScrollArea.Root>
@@ -101,8 +113,8 @@ export function CenterPanel() {
           <ScrollArea.Root className="h-full">
             <ScrollArea.Viewport className="h-full p-4">
               <Card title="Dry Run Guide">
-                Provide custom input, run mock execution timeline, and inspect each step with line highlighting and variable
-                tracker.
+                Provide custom input, run mock execution timeline, and inspect
+                each step with line highlighting and variable tracker.
               </Card>
             </ScrollArea.Viewport>
             <ScrollArea.Scrollbar orientation="vertical" />
@@ -113,7 +125,9 @@ export function CenterPanel() {
           <ScrollArea.Root className="h-full">
             <ScrollArea.Viewport className="h-full p-4">
               <div className="rounded-xl border border-white/10 bg-slate-900/70 p-3">
-                <p className="mb-2 text-xs text-slate-400">Your personal notes are persisted locally.</p>
+                <p className="mb-2 text-xs text-slate-400">
+                  Your personal notes are persisted locally.
+                </p>
                 <textarea
                   className="h-60 w-full resize-none rounded-lg border border-white/10 bg-slate-950/70 p-3 text-sm outline-none"
                   value={notes[selectedProblem.id] ?? ""}
@@ -133,7 +147,9 @@ export function CenterPanel() {
 function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
-      <p className="mb-2 text-xs uppercase tracking-[0.2em] text-slate-500">{title}</p>
+      <p className="mb-2 text-xs uppercase tracking-[0.2em] text-slate-500">
+        {title}
+      </p>
       <div className="text-sm leading-relaxed text-slate-200">{children}</div>
     </div>
   );

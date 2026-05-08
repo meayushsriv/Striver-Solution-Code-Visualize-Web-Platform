@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/components/centerpanel.tsx","./src/components/commandpalette.tsx","./src/components/homehero.tsx","./src/components/rightpanel.tsx","./src/components/sidebar.tsx","./src/lib/mockexecution.ts","./src/lib/utils.ts","./src/services/ai.ts","./src/store/appstore.ts"],"version":"5.9.3"}

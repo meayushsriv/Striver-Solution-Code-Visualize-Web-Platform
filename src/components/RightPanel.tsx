@@ -8,19 +8,43 @@ import { useAppStore } from "../store/appStore";
 import { explainWithAi } from "../services/ai";
 
 const nodes = [
-  { id: "start", position: { x: 0, y: 0 }, data: { label: "Start" }, type: "input" },
-  { id: "loop", position: { x: 30, y: 120 }, data: { label: "Loop / Transition" } },
-  { id: "result", position: { x: 20, y: 240 }, data: { label: "Output" }, type: "output" }
+  {
+    id: "start",
+    position: { x: 0, y: 0 },
+    data: { label: "Start" },
+    type: "input",
+  },
+  {
+    id: "loop",
+    position: { x: 30, y: 120 },
+    data: { label: "Loop / Transition" },
+  },
+  {
+    id: "result",
+    position: { x: 20, y: 240 },
+    data: { label: "Output" },
+    type: "output",
+  },
 ];
 
 const edges = [
   { id: "e1", source: "start", target: "loop", animated: true },
-  { id: "e2", source: "loop", target: "result", animated: true }
+  { id: "e2", source: "loop", target: "result", animated: true },
 ];
 
 export function RightPanel() {
-  const { selectedProblem, timeline, currentStep, nextStep, prevStep, isPlaying, setPlaying, speed, setSpeed, runMock } =
-    useAppStore();
+  const {
+    selectedProblem,
+    timeline,
+    currentStep,
+    nextStep,
+    prevStep,
+    isPlaying,
+    setPlaying,
+    speed,
+    setSpeed,
+    runMock,
+  } = useAppStore();
   const [input, setInput] = useState("5 2 7 1 9");
   const [aiExplanation, setAiExplanation] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -37,13 +61,13 @@ export function RightPanel() {
           startLineNumber: line,
           endLineNumber: line,
           startColumn: 1,
-          endColumn: 1
+          endColumn: 1,
         },
         options: {
           isWholeLine: true,
-          className: "line-highlight"
-        }
-      }
+          className: "line-highlight",
+        },
+      },
     ];
   }, [current?.line]);
 
@@ -63,7 +87,8 @@ export function RightPanel() {
         code: selectedProblem.code,
         line,
         language: selectedProblem.language,
-        question: "Explain what this line does in the context of the algorithm."
+        question:
+          "Explain what this line does in the context of the algorithm.",
       });
       setAiExplanation(explanation);
     } catch (error) {
@@ -76,8 +101,10 @@ export function RightPanel() {
   return (
     <section className="panel flex h-full min-w-[360px] flex-col p-3">
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Debugger Workspace</p>
-        <button 
+        <p className="text-xs uppercase tracking-[0.25em] text-slate-500">
+          Debugger Workspace
+        </p>
+        <button
           onClick={explainCurrentLine}
           disabled={loading}
           className="rounded-lg border border-white/10 px-2 py-1 text-xs text-cyan-300 hover:bg-white/5 disabled:opacity-50"
@@ -120,17 +147,18 @@ export function RightPanel() {
               fontSize: 13,
               smoothScrolling: true,
               readOnly: false,
-              padding: { top: 12 }
+              padding: { top: 12 },
             }}
             theme="vs-dark"
             onMount={(editor, monaco) => {
               editorRef.current = editor;
-              decorationsRef.current = editor.createDecorationsCollection(decorations);
+              decorationsRef.current =
+                editor.createDecorationsCollection(decorations);
               monaco.editor.defineTheme("striver-dark", {
                 base: "vs-dark",
                 inherit: true,
                 rules: [],
-                colors: { "editor.background": "#020617" }
+                colors: { "editor.background": "#020617" },
               });
               monaco.editor.setTheme("striver-dark");
             }}
@@ -143,7 +171,11 @@ export function RightPanel() {
               <SkipBack className="h-4 w-4" />
             </button>
             <button onClick={() => setPlaying(!isPlaying)} className="icon-btn">
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              {isPlaying ? (
+                <Pause className="h-4 w-4" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
             </button>
             <button onClick={nextStep} className="icon-btn">
               <SkipForward className="h-4 w-4" />
@@ -165,11 +197,16 @@ export function RightPanel() {
             </div>
           </div>
           <p className="text-xs text-slate-400">
-            {current ? `Line ${current.line}: ${current.action}` : "Run a test case to generate timeline"}
+            {current
+              ? `Line ${current.line}: ${current.action}`
+              : "Run a test case to generate timeline"}
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {Object.entries(current?.variables ?? {}).map(([k, v]) => (
-              <span key={k} className="rounded-md border border-white/10 bg-slate-900 px-2 py-1 text-xs">
+              <span
+                key={k}
+                className="rounded-md border border-white/10 bg-slate-900 px-2 py-1 text-xs"
+              >
                 {k}: {String(v)}
               </span>
             ))}
