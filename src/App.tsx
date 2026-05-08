@@ -83,7 +83,7 @@ export function App() {
               key="layout"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid h-[calc(100vh-16.5rem)] grid-cols-1 gap-3 xl:grid-cols-[320px_1fr_520px]"
+              className="grid h-[calc(100vh-16.5rem)] grid-cols-1 gap-3 md:grid-cols-[300px_1fr] lg:grid-cols-[320px_1fr_400px]"
             >
               <Sidebar />
               <CenterPanel />
