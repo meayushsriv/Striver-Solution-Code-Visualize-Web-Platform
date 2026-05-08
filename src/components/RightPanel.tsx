@@ -2,9 +2,10 @@ import Editor from "@monaco-editor/react";
 import { Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Pause, Play, SkipBack, SkipForward, WandSparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as Slider from "@radix-ui/react-slider";
 import { useAppStore } from "../store/appStore";
+import { explainWithAi } from "../services/ai";
 
 const nodes = [
   { id: "start", position: { x: 0, y: 0 }, data: { label: "Start" }, type: "input" },
@@ -21,6 +22,10 @@ export function RightPanel() {
   const { selectedProblem, timeline, currentStep, nextStep, prevStep, isPlaying, setPlaying, speed, setSpeed, runMock } =
     useAppStore();
   const [input, setInput] = useState("5 2 7 1 9");
+  const [aiExplanation, setAiExplanation] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const editorRef = useRef<any>(null);
+  const decorationsRef = useRef<any>(null);
 
   const current = timeline[currentStep];
 
@@ -42,12 +47,42 @@ export function RightPanel() {
     ];
   }, [current?.line]);
 
+  useEffect(() => {
+    if (decorationsRef.current) {
+      decorationsRef.current.set(decorations);
+    }
+  }, [decorations]);
+
+  const explainCurrentLine = async () => {
+    if (!selectedProblem || !editorRef.current) return;
+    const position = editorRef.current.getPosition();
+    const line = position.lineNumber;
+    setLoading(true);
+    try {
+      const explanation = await explainWithAi({
+        code: selectedProblem.code,
+        line,
+        language: selectedProblem.language,
+        question: "Explain what this line does in the context of the algorithm."
+      });
+      setAiExplanation(explanation);
+    } catch (error) {
+      setAiExplanation("Error getting AI explanation.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="panel flex h-full min-w-[360px] flex-col p-3">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Debugger Workspace</p>
-        <button className="rounded-lg border border-white/10 px-2 py-1 text-xs text-cyan-300 hover:bg-white/5">
-          Explain this line
+        <button 
+          onClick={explainCurrentLine}
+          disabled={loading}
+          className="rounded-lg border border-white/10 px-2 py-1 text-xs text-cyan-300 hover:bg-white/5 disabled:opacity-50"
+        >
+          {loading ? "Loading..." : "Explain this line"}
         </button>
       </div>
 
@@ -89,6 +124,8 @@ export function RightPanel() {
             }}
             theme="vs-dark"
             onMount={(editor, monaco) => {
+              editorRef.current = editor;
+              decorationsRef.current = editor.createDecorationsCollection(decorations);
               monaco.editor.defineTheme("striver-dark", {
                 base: "vs-dark",
                 inherit: true,
@@ -96,7 +133,6 @@ export function RightPanel() {
                 colors: { "editor.background": "#020617" }
               });
               monaco.editor.setTheme("striver-dark");
-              editor.createDecorationsCollection(decorations);
             }}
           />
         </div>
@@ -138,6 +174,12 @@ export function RightPanel() {
               </span>
             ))}
           </div>
+          {aiExplanation && (
+            <div className="mt-2 rounded-lg border border-white/10 bg-slate-900/70 p-2">
+              <p className="text-xs text-slate-400">AI Explanation:</p>
+              <p className="text-xs text-slate-200">{aiExplanation}</p>
+            </div>
+          )}
         </div>
 
         <div className="h-44 overflow-hidden rounded-xl border border-white/10 bg-slate-950/70">
