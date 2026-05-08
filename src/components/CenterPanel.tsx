@@ -1,9 +1,31 @@
 import * as Tabs from "@radix-ui/react-tabs";
+import * as ScrollArea from "@radix-ui/react-scroll-area";
 import { motion } from "framer-motion";
+import { useState, type ReactNode } from "react";
 import { useAppStore } from "../store/appStore";
+import { explainWithAi } from "../services/ai";
 
 export function CenterPanel() {
   const { selectedProblem, notes, setNote, favorites, toggleFavorite } = useAppStore();
+  const [aiExplanation, setAiExplanation] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+
+  const getAiExplanation = async () => {
+    if (!selectedProblem) return;
+    setLoading(true);
+    try {
+      const explanation = await explainWithAi({
+        code: selectedProblem.code,
+        language: selectedProblem.language,
+        question: "Provide a detailed explanation of this algorithm and its approach."
+      });
+      setAiExplanation(explanation);
+    } catch (error) {
+      setAiExplanation("Error getting AI explanation.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!selectedProblem) {
     return (
@@ -42,49 +64,77 @@ export function CenterPanel() {
         </Tabs.List>
 
         <Tabs.Content value="solution" asChild>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            <Card title="Problem Statement">{selectedProblem.statement}</Card>
-            <Card title="Approach">{selectedProblem.approach}</Card>
-            <Card title="Complexity">{`${selectedProblem.complexity.time} time • ${selectedProblem.complexity.space} space`}</Card>
-            <Card title="AI Explanation">
-              This panel is designed for LLM-enhanced summaries and "Explain this line" contextual help. Wire your AI API in
-              `src/services/ai.ts`.
-            </Card>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <ScrollArea.Root className="h-full">
+              <ScrollArea.Viewport className="h-full">
+                <div className="space-y-4 p-1">
+                  <Card title="Problem Statement">{selectedProblem.statement}</Card>
+                  <Card title="Approach">{selectedProblem.approach}</Card>
+                  <Card title="Complexity">{`${selectedProblem.complexity.time} time • ${selectedProblem.complexity.space} space`}</Card>
+                  <Card title="AI Explanation">
+                    <button
+                      onClick={getAiExplanation}
+                      disabled={loading}
+                      className="mb-2 rounded-lg bg-cyan-500 px-3 py-1 text-xs text-white disabled:opacity-50"
+                    >
+                      {loading ? "Loading..." : "Get AI Explanation"}
+                    </button>
+                    <p className="text-sm">{aiExplanation || "Click to get AI-powered explanation of the approach."}</p>
+                  </Card>
+                </div>
+              </ScrollArea.Viewport>
+              <ScrollArea.Scrollbar orientation="vertical" />
+            </ScrollArea.Root>
           </motion.div>
         </Tabs.Content>
 
         <Tabs.Content value="visualization" asChild>
-          <Card title="Visualization Flow">Use the right panel controls to animate state and inspect variable transitions.</Card>
+          <ScrollArea.Root className="h-full">
+            <ScrollArea.Viewport className="h-full p-4">
+              <Card title="Visualization Flow">Use the right panel controls to animate state and inspect variable transitions.</Card>
+            </ScrollArea.Viewport>
+            <ScrollArea.Scrollbar orientation="vertical" />
+          </ScrollArea.Root>
         </Tabs.Content>
 
         <Tabs.Content value="dry-run" asChild>
-          <Card title="Dry Run Guide">
-            Provide custom input, run mock execution timeline, and inspect each step with line highlighting and variable
-            tracker.
-          </Card>
+          <ScrollArea.Root className="h-full">
+            <ScrollArea.Viewport className="h-full p-4">
+              <Card title="Dry Run Guide">
+                Provide custom input, run mock execution timeline, and inspect each step with line highlighting and variable
+                tracker.
+              </Card>
+            </ScrollArea.Viewport>
+            <ScrollArea.Scrollbar orientation="vertical" />
+          </ScrollArea.Root>
         </Tabs.Content>
 
         <Tabs.Content value="notes" asChild>
-          <div className="rounded-xl border border-white/10 bg-slate-900/70 p-3">
-            <p className="mb-2 text-xs text-slate-400">Your personal notes are persisted locally.</p>
-            <textarea
-              className="h-60 w-full resize-none rounded-lg border border-white/10 bg-slate-950/70 p-3 text-sm outline-none"
-              value={notes[selectedProblem.id] ?? ""}
-              onChange={(e) => setNote(selectedProblem.id, e.target.value)}
-              placeholder="Write your intuition, edge cases, and revision tips..."
-            />
-          </div>
+          <ScrollArea.Root className="h-full">
+            <ScrollArea.Viewport className="h-full p-4">
+              <div className="rounded-xl border border-white/10 bg-slate-900/70 p-3">
+                <p className="mb-2 text-xs text-slate-400">Your personal notes are persisted locally.</p>
+                <textarea
+                  className="h-60 w-full resize-none rounded-lg border border-white/10 bg-slate-950/70 p-3 text-sm outline-none"
+                  value={notes[selectedProblem.id] ?? ""}
+                  onChange={(e) => setNote(selectedProblem.id, e.target.value)}
+                  placeholder="Write your intuition, edge cases, and revision tips..."
+                />
+              </div>
+            </ScrollArea.Viewport>
+            <ScrollArea.Scrollbar orientation="vertical" />
+          </ScrollArea.Root>
         </Tabs.Content>
       </Tabs.Root>
     </section>
   );
 }
 
-function Card({ title, children }: { title: string; children: string }) {
+function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="rounded-xl border border-white/10 bg-slate-900/70 p-4">
       <p className="mb-2 text-xs uppercase tracking-[0.2em] text-slate-500">{title}</p>
-      <p className="text-sm leading-relaxed text-slate-200">{children}</p>
+      <div className="text-sm leading-relaxed text-slate-200">{children}</div>
     </div>
   );
 }
