@@ -7,32 +7,58 @@ export type AiExplainRequest = {
   question?: string;
 };
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
+const fallbackApiKey = "AIzaSyCb0xGaCv3-EOXGRbyYip7sTzDHdQycG8Y";
+const modelCandidates = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"];
+
+function buildPrompt(request: AiExplainRequest): string {
+  let prompt = `Explain the following ${request.language} code in a concise but helpful way.`;
+
+  if (typeof request.line === "number") {
+    const lines = request.code.split("\n");
+    const lineContent = lines[request.line - 1] || "";
+    prompt += ` Focus on line ${request.line}: "${lineContent}".`;
+  }
+
+  if (request.question) {
+    prompt += ` Additional question: ${request.question}`;
+  }
+
+  prompt += `\n\nCode:\n${request.code}`;
+  return prompt;
+}
+
+function normalizeResponse(text: string): string {
+  return text.replace(/\*\*(.*?)\*\*/g, "$1").trim();
+}
 
 export async function explainWithAi(request: AiExplainRequest): Promise<string> {
-  if (!import.meta.env.VITE_GEMINI_API_KEY) {
-    return "Please set your GEMINI_API_KEY in environment variables.";
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || fallbackApiKey;
+
+  if (!apiKey) {
+    return "Please set your Gemini API key in the environment variables.";
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const genAI = new GoogleGenerativeAI(apiKey);
+    let lastError: unknown;
 
-    let prompt = `Explain the following ${request.language} code`;
-    if (request.line) {
-      const lines = request.code.split('\n');
-      const lineContent = lines[request.line - 1] || '';
-      prompt += `, specifically line ${request.line}: "${lineContent}"`;
+    for (const modelName of modelCandidates) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(buildPrompt(request));
+        const response = await result.response;
+        const text = normalizeResponse(response.text());
+        if (text) {
+          return text;
+        }
+      } catch (error) {
+        lastError = error;
+      }
     }
-    if (request.question) {
-      prompt += `. Additional question: ${request.question}`;
-    }
-    prompt += `.\n\nCode:\n${request.code}`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    throw lastError ?? new Error("No Gemini model responded");
   } catch (error) {
     console.error("AI explanation error:", error);
-    return "Failed to get AI explanation. Check your API key and try again.";
+    return "AI is unavailable right now. Please check the API key or try again in a moment.";
   }
 }

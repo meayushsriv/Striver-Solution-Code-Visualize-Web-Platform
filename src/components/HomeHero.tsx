@@ -15,8 +15,13 @@ export function HomeHero({ total }: { total: number }) {
           Debug, visualize, and master your local <span className="text-indigo-300">Striver</span> solutions
         </h1>
         <p className="mt-3 max-w-3xl text-sm text-slate-300">
-          Search {total} indexed solutions, dry run custom input, and step through algorithm state with animations.
+          Search {total} indexed solutions, dry run custom input, and step through algorithm state with polished animations.
         </p>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-200">
+          <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1">Gemini explanations</span>
+          <span className="rounded-full border border-fuchsia-400/20 bg-fuchsia-400/10 px-3 py-1">Live dry-run steps</span>
+          <span className="rounded-full border border-white/10 bg-slate-900/70 px-3 py-1">Modern explorer UI</span>
+        </div>
       </motion.div>
     </section>
   );

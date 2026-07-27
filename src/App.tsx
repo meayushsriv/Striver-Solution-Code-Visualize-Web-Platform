@@ -25,7 +25,8 @@ export function App() {
   } = useAppStore();
 
   useEffect(() => {
-    void fetch("/strivers-index.json")
+    const indexUrl = `${import.meta.env.BASE_URL}strivers-index.json`;
+    void fetch(indexUrl)
       .then((res) => res.json())
       .then((data) => loadProblems((data.problems ?? []) as Problem[]))
       .catch(() => loadProblems([]));
@@ -57,7 +58,7 @@ export function App() {
   return (
     <main className="min-h-screen bg-slate-950 p-4 text-slate-100">
       <div className="mx-auto max-w-[1800px] space-y-4">
-        <header className="flex items-center justify-between rounded-xl border border-white/10 bg-slate-900/70 px-4 py-3">
+        <header className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/70 px-4 py-3">
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
               Striver Code Visualizer
@@ -67,13 +68,18 @@ export function App() {
               {selectedProblem ? `• ${selectedProblem.title}` : ""}
             </p>
           </div>
-          <button
-            onClick={() => setCommandPaletteOpen(true)}
-            className="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-xs text-slate-300"
-          >
-            <Command className="h-4 w-4 text-cyan-300" />
-            Command Palette
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-300">
+              {problems.length} indexed solutions
+            </div>
+            <button
+              onClick={() => setCommandPaletteOpen(true)}
+              className="flex items-center gap-2 rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2 text-xs text-slate-300"
+            >
+              <Command className="h-4 w-4 text-cyan-300" />
+              Command Palette
+            </button>
+          </div>
         </header>
 
         <HomeHero total={problems.length} />

@@ -54,6 +54,20 @@ export function CenterPanel() {
         </button>
       </div>
 
+      <div className="mb-4 flex flex-wrap gap-2">
+        <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-cyan-300">
+          {selectedProblem.difficulty}
+        </span>
+        {selectedProblem.tags.slice(0, 4).map((tag) => (
+          <span
+            key={tag}
+            className="rounded-full border border-white/10 bg-slate-900/70 px-2.5 py-1 text-[10px] text-slate-300"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+
       <Tabs.Root defaultValue="solution" className="h-[calc(100%-4.5rem)]">
         <Tabs.List className="mb-4 grid grid-cols-4 rounded-xl border border-white/10 bg-slate-900/70 p-1 text-xs">
           {["solution", "visualization", "dry-run", "notes"].map((tab) => (
@@ -76,7 +90,19 @@ export function CenterPanel() {
                     {selectedProblem.statement}
                   </Card>
                   <Card title="Approach">{selectedProblem.approach}</Card>
-                  <Card title="Complexity">{`${selectedProblem.complexity.time} time • ${selectedProblem.complexity.space} space`}</Card>
+                  <Card title="Learning Snapshot">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-xs text-emerald-300">
+                        {selectedProblem.complexity.time} time
+                      </span>
+                      <span className="rounded-lg border border-fuchsia-400/20 bg-fuchsia-400/10 px-2 py-1 text-xs text-fuchsia-300">
+                        {selectedProblem.complexity.space} space
+                      </span>
+                      <span className="rounded-lg border border-white/10 bg-slate-950/60 px-2 py-1 text-xs text-slate-300">
+                        Step through the dry run to understand each transition.
+                      </span>
+                    </div>
+                  </Card>
                   <Card title="AI Explanation">
                     <button
                       onClick={getAiExplanation}

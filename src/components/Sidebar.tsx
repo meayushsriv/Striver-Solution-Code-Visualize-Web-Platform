@@ -71,6 +71,11 @@ export function Sidebar() {
       </div>
 
       <div className="space-y-2 overflow-y-auto pb-4 pr-1">
+        {filteredProblems.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-white/10 bg-slate-900/50 p-3 text-xs text-slate-400">
+            No problems match your filters yet. Try adjusting the topic or search term.
+          </div>
+        ) : null}
         {filteredProblems.map((problem) => (
           <button
             key={problem.id}

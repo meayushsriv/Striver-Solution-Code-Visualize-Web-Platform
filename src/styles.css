@@ -39,5 +39,11 @@ body {
 }
 
 .line-highlight {
-  background: linear-gradient(90deg, rgba(34, 211, 238, 0.2), rgba(129, 140, 248, 0.15));
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.24), rgba(129, 140, 248, 0.16));
+}
+
+.line-marker {
+  color: #67e8f9;
+  font-weight: 700;
+  margin-left: 0.5rem;
 }

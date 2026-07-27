@@ -48,39 +48,54 @@ export function RightPanel() {
   const [input, setInput] = useState("5 2 7 1 9");
   const [aiExplanation, setAiExplanation] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [complexityEstimate, setComplexityEstimate] = useState(
+    "Run an estimate to see a quick complexity hint."
+  );
   const editorRef = useRef<any>(null);
-  const decorationsRef = useRef<any>(null);
+  const decorationIdsRef = useRef<string[]>([]);
 
   const current = timeline[currentStep];
+  const codeLines = selectedProblem?.code.split("\n") ?? [];
+  const activeLine =
+    current?.line && current.line > 0
+      ? Math.min(current.line, codeLines.length || 1)
+      : 1;
 
   const decorations = useMemo(() => {
-    const line = current?.line ?? 1;
+    const lineText = codeLines[activeLine - 1] ?? "";
     return [
       {
         range: {
-          startLineNumber: line,
-          endLineNumber: line,
+          startLineNumber: activeLine,
+          endLineNumber: activeLine,
           startColumn: 1,
-          endColumn: 1,
+          endColumn: lineText.length > 0 ? lineText.length + 1 : 1,
         },
         options: {
           isWholeLine: true,
           className: "line-highlight",
+          after: {
+            content: "●",
+            inlineClassName: "line-marker",
+          },
         },
       },
     ];
-  }, [current?.line]);
+  }, [activeLine, codeLines]);
 
   useEffect(() => {
-    if (decorationsRef.current) {
-      decorationsRef.current.set(decorations);
-    }
-  }, [decorations]);
+    if (!editorRef.current || !selectedProblem) return;
+    editorRef.current.revealLineInCenter(activeLine);
+    editorRef.current.setPosition({ lineNumber: activeLine, column: 1 });
+    decorationIdsRef.current = editorRef.current.deltaDecorations(
+      decorationIdsRef.current,
+      decorations as any
+    );
+  }, [activeLine, decorations, selectedProblem]);
 
   const explainCurrentLine = async () => {
     if (!selectedProblem || !editorRef.current) return;
-    const position = editorRef.current.getPosition();
-    const line = position.lineNumber;
+    const line = editorRef.current.getPosition()?.lineNumber ?? current?.line ?? 1;
     setLoading(true);
     try {
       const explanation = await explainWithAi({
@@ -91,11 +106,20 @@ export function RightPanel() {
           "Explain what this line does in the context of the algorithm.",
       });
       setAiExplanation(explanation);
-    } catch (error) {
+    } catch {
       setAiExplanation("Error getting AI explanation.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const estimateComplexity = () => {
+    if (!selectedProblem) return;
+    const code = selectedProblem.code.toLowerCase();
+    const loopCount = (code.match(/\b(for|while)\b/g) ?? []).length;
+    const nested = (code.match(/\bfor\b/g) ?? []).length > 1;
+    const estimate = nested ? "O(n²)" : loopCount > 0 ? "O(n)" : "O(1)";
+    setComplexityEstimate(`Estimated pattern: ${estimate} for this solution shape.`);
   };
 
   return (
@@ -128,7 +152,10 @@ export function RightPanel() {
           >
             Run Test Case
           </button>
-          <button className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300">
+          <button
+            onClick={estimateComplexity}
+            className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-slate-300"
+          >
             <WandSparkles className="mr-1 inline h-3.5 w-3.5" />
             Estimate Complexity
           </button>
@@ -152,8 +179,7 @@ export function RightPanel() {
             theme="vs-dark"
             onMount={(editor, monaco) => {
               editorRef.current = editor;
-              decorationsRef.current =
-                editor.createDecorationsCollection(decorations);
+              decorationIdsRef.current = editor.deltaDecorations([], []);
               monaco.editor.defineTheme("striver-dark", {
                 base: "vs-dark",
                 inherit: true,
@@ -201,6 +227,7 @@ export function RightPanel() {
               ? `Line ${current.line}: ${current.action}`
               : "Run a test case to generate timeline"}
           </p>
+          <p className="mt-2 text-[11px] text-cyan-300">{complexityEstimate}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {Object.entries(current?.variables ?? {}).map(([k, v]) => (
               <span
